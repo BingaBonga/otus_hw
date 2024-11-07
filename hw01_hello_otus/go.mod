@@ -1,4 +1,4 @@
-module github.com/BingaBonga/otus_hw/tree/master/hw01_hello_otus
+module github.com/BingaBonga/otus_hw/hw01_hello_otus
 
 go 1.22
 
