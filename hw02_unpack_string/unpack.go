@@ -13,7 +13,9 @@ func Unpack(input string) (string, error) {
 	asterisk := false
 	output := strings.Builder{}
 
-	for _, char := range input {
+	for _, v := range input {
+		// copy loop var
+		char := v
 		if digit, err := strconv.Atoi(string(char)); err == nil && !asterisk {
 			if buffer == nil {
 				return "", ErrInvalidString
