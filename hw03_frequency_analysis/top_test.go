@@ -3,11 +3,12 @@ package hw03frequencyanalysis
 import (
 	"testing"
 
+	//nolint:depguard
 	"github.com/stretchr/testify/require"
 )
 
 // Change to true if needed.
-var taskWithAsteriskIsCompleted = false
+var taskWithAsteriskIsCompleted = true
 
 var text = `Как видите, он  спускается  по  лестнице  вслед  за  своим
 	другом   Кристофером   Робином,   головой   вниз,  пересчитывая
