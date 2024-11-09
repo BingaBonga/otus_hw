@@ -1,7 +1,6 @@
 package hw03frequencyanalysis
 
 import (
-	"math"
 	"sort"
 	"strings"
 	"unicode"
@@ -32,8 +31,11 @@ func Top10(input string) []string {
 		return wordCountMap[worlds[i]] > wordCountMap[worlds[j]]
 	})
 
-	returnCount := int(math.Min(float64(len(worlds)), float64(10)))
-	return worlds[:returnCount]
+	if len(worlds) < 10 {
+		return worlds
+	}
+
+	return worlds[:10]
 }
 
 func onlyLetters(input string) string {
@@ -55,6 +57,10 @@ func onlyLetters(input string) string {
 		}
 
 		trimPostfixLength++
+	}
+
+	if (trimSuffixLength + trimPostfixLength) > len(runes) {
+		return input
 	}
 
 	return string(runes[trimSuffixLength : len(runes)-trimPostfixLength])
