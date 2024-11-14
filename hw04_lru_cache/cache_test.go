@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	//nolint:depguard
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,6 +19,23 @@ func TestCache(t *testing.T) {
 
 		_, ok = c.Get("bbb")
 		require.False(t, ok)
+	})
+
+	t.Run("clear", func(t *testing.T) {
+		c := NewCache(10)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		val, ok := c.Get("aaa")
+		require.True(t, ok)
+		require.Equal(t, 100, val)
+
+		c.Clear()
+
+		val, ok = c.Get("aaa")
+		require.False(t, ok)
+		require.Nil(t, val)
 	})
 
 	t.Run("simple", func(t *testing.T) {
@@ -49,14 +67,51 @@ func TestCache(t *testing.T) {
 		require.Nil(t, val)
 	})
 
-	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+	t.Run("simple capacity", func(t *testing.T) {
+		c := NewCache(2)
+
+		// In Capacity
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
+
+		// Out capacity
+		wasInCache = c.Set("ccc", 300)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		val, ok := c.Get("bbb")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
+	t.Run("ordered capacity", func(t *testing.T) {
+		c := NewCache(2)
+
+		// In Capacity
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
+
+		// Reverse order
+		c.Get("aaa")
+
+		// Out capacity
+		wasInCache = c.Set("ccc", 300)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
 	})
 }
 
-func TestCacheMultithreading(t *testing.T) {
-	t.Skip() // Remove me if task with asterisk completed.
-
+func TestCacheMultithreading(_ *testing.T) {
 	c := NewCache(10)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
