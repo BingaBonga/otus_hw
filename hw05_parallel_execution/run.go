@@ -16,18 +16,23 @@ func Run(tasks []Task, n, m int) error {
 	wg.Add(n)
 
 	errorsRemain := int64(m)
-	tasksLen := len(tasks)
+	tasksLen := int64(len(tasks))
+	currentIndexTask := int64(-1)
 
 	for i := 0; i < n; i++ {
 		go func() {
-			for j := i; j < tasksLen && atomic.LoadInt64(&errorsRemain) > 0; j += n {
-				err := tasks[j]()
-				if err != nil {
+			defer wg.Done()
+
+			for {
+				j := atomic.AddInt64(&currentIndexTask, 1)
+				if j >= tasksLen || atomic.LoadInt64(&errorsRemain) <= 0 {
+					return
+				}
+
+				if err := tasks[j](); err != nil {
 					atomic.AddInt64(&errorsRemain, -1)
 				}
 			}
-
-			wg.Done()
 		}()
 	}
 
