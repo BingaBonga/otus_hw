@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	//nolint:depguard
 	"github.com/stretchr/testify/require"
 	"go.uber.org/goleak"
 )
@@ -66,5 +68,75 @@ func TestRun(t *testing.T) {
 
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
+	})
+
+	t.Run("keep calm and make math", func(t *testing.T) {
+		tasksCount := 1000
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			tasks = append(tasks, func() error {
+				answerQuestionOfLife := 0
+				for i := range rand.Intn(10_000_000) {
+					answerQuestionOfLife += i
+				}
+
+				atomic.AddInt32(&runTasksCount, 1)
+
+				if answerQuestionOfLife%2 == 1 {
+					return fmt.Errorf("wrong answer on life question %d in gorutine %d", answerQuestionOfLife, i)
+				}
+
+				return nil
+			})
+		}
+
+		workersCount := 10
+		maxErrorsCount := 100
+
+		_ = Run(tasks, workersCount, maxErrorsCount)
+		require.GreaterOrEqual(t, runTasksCount, int32(maxErrorsCount), "tasks started less then errors received")
+	})
+
+	t.Run("tasks without errors with Eventually", func(t *testing.T) {
+		workersCount := 5
+		maxErrorsCount := 1
+
+		syncChan := make(chan struct{}, 5)
+		defer close(syncChan)
+
+		tasksCount := 45
+		tasks := make([]Task, 0, tasksCount)
+
+		once := sync.Once{}
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			tasks = append(tasks, func() error {
+				<-syncChan
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+
+		require.Eventually(t, func() bool {
+			once.Do(func() {
+				go func() {
+					_ = Run(tasks, workersCount, maxErrorsCount)
+				}()
+			})
+
+			if int32(tasksCount) == atomic.LoadInt32(&runTasksCount) {
+				return true
+			}
+
+			for range workersCount {
+				syncChan <- struct{}{}
+			}
+
+			return false
+		}, time.Second+time.Millisecond*50, time.Millisecond*100, "tasks were run sequentially?")
 	})
 }
