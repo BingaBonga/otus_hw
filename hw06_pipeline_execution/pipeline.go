@@ -47,15 +47,7 @@ func readChannelWithDone(from <-chan interface{}, to chan<- interface{}, done <-
 
 func readChannel(from <-chan interface{}, to chan<- interface{}) {
 	defer close(to)
-
-	for {
-		select {
-		case v := <-from:
-			if v == nil {
-				return
-			}
-
-			to <- v
-		}
+	for v := range from {
+		to <- v
 	}
 }

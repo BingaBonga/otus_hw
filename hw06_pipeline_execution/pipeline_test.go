@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	//nolint:depguard
 	"github.com/stretchr/testify/require"
 )
 
@@ -150,6 +151,5 @@ func TestAllStageStop(t *testing.T) {
 		wg.Wait()
 
 		require.Len(t, result, 0)
-
 	})
 }
