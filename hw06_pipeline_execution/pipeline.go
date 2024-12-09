@@ -9,45 +9,36 @@ type (
 type Stage func(in In) (out Out)
 
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
-	out := make(chan interface{})
+	for _, stage := range stages {
+		in = stage(gracefulStop(in, done))
+	}
+
+	return gracefulStop(in, done)
+}
+
+func gracefulStop(in In, done In) Out {
+	out := make(Bi)
 
 	go func() {
-		bufferChannel := make(chan interface{}, len(stages))
-		go readChannelWithDone(in, bufferChannel, done)
+		defer func() {
+			close(out)
+			for range in {
+			}
+		}()
 
-		for _, stage := range stages {
-			outChannel := stage(bufferChannel)
+		for {
+			select {
+			case <-done:
+				return
+			case v := <-in:
+				if v == nil {
+					return
+				}
 
-			bufferChannel = make(chan interface{}, len(stages))
-			go readChannel(outChannel, bufferChannel)
+				out <- v
+			}
 		}
-
-		go readChannelWithDone(bufferChannel, out, done)
 	}()
 
 	return out
-}
-
-func readChannelWithDone(from <-chan interface{}, to chan<- interface{}, done <-chan interface{}) {
-	defer close(to)
-
-	for {
-		select {
-		case <-done:
-			return
-		case v := <-from:
-			if v == nil {
-				return
-			}
-
-			to <- v
-		}
-	}
-}
-
-func readChannel(from <-chan interface{}, to chan<- interface{}) {
-	defer close(to)
-	for v := range from {
-		to <- v
-	}
 }
