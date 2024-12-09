@@ -200,6 +200,6 @@ func TestAllStageStop(t *testing.T) {
 		elapsed := time.Since(start)
 
 		require.Len(t, result, 0)
-		require.Less(t, int64(elapsed), int64(abortDur)+int64(sleepPerStage+fault))
+		require.Less(t, int64(elapsed), int64(abortDur*2)+int64(fault))
 	})
 }
