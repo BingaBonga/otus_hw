@@ -22,6 +22,7 @@ func gracefulStop(in In, done In) Out {
 	go func() {
 		defer func() {
 			close(out)
+			//nolint:revive
 			for range in {
 			}
 		}()

@@ -175,7 +175,10 @@ func TestAllStageStop(t *testing.T) {
 	t.Run("done with time check case", func(t *testing.T) {
 		in := make(Bi)
 		done := make(Bi)
-		data := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+		data := [100]int{}
+		for i := 1; i < len(data); i++ {
+			data[i] = i
+		}
 
 		// Abort after 200ms
 		abortDur := sleepPerStage * 2
