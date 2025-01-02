@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fromFileName = "testdata/input.txt"
-var toFileName = "output_test.txt"
+var (
+	fromFileName = "testdata/input.txt"
+	toFileName   = "output_test.txt"
+)
 
 func TestCopy(t *testing.T) {
 	t.Run("full copy", func(t *testing.T) {
