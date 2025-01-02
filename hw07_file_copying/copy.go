@@ -23,13 +23,13 @@ func Copy(fromPath, toPath string, offset, limit int64) (err error) {
 		}
 	}()
 
-	fromFile, err := os.OpenFile(fromPath, os.O_RDONLY, 0666)
+	fromFile, err := os.OpenFile(fromPath, os.O_RDONLY, 0o666)
 	check(err)
 	defer func() {
 		check(fromFile.Close())
 	}()
 
-	toFile, err := os.OpenFile(toPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	toFile, err := os.OpenFile(toPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
 	if os.IsNotExist(err) {
 		toFile, err = os.Create(toPath)
 	}
