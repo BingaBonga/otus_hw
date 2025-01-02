@@ -45,6 +45,10 @@ func Copy(fromPath, toPath string, offset, limit int64) (err error) {
 	fromFileInfo, err := os.Stat(fromPath)
 	check(err)
 
+	if fromFileInfo.IsDir() {
+		return ErrUnsupportedFile
+	}
+
 	fileSize := fromFileInfo.Size()
 	if offset > fileSize {
 		return ErrOffsetExceedsFileSize
@@ -77,7 +81,7 @@ func Copy(fromPath, toPath string, offset, limit int64) (err error) {
 
 		progressBar.Add64(readAt64)
 		progressBar.Update()
-		
+
 		read += readAt64
 		if errRead == io.EOF {
 			break
