@@ -5,6 +5,9 @@ import (
 	"io"
 	"log"
 	"os"
+
+	//nolint:depguard
+	"github.com/cheggaaa/pb"
 )
 
 var (
@@ -47,12 +50,15 @@ func Copy(fromPath, toPath string, offset, limit int64) (err error) {
 		return ErrOffsetExceedsFileSize
 	}
 
-	if limit == 0 {
-		limit = fileSize
+	if limit == 0 || limit+offset > fileSize {
+		limit = fileSize - offset
 	}
 
 	read := int64(0)
 	buf := make([]byte, 1024)
+	progressBar := pb.New64(limit).Start()
+	defer progressBar.Finish()
+
 	for read < limit {
 		readAt, errRead := fromFile.ReadAt(buf, offset+read)
 		if errRead != nil && errRead != io.EOF {
@@ -69,6 +75,9 @@ func Copy(fromPath, toPath string, offset, limit int64) (err error) {
 			return ErrFailedToWrite
 		}
 
+		progressBar.Add64(readAt64)
+		progressBar.Update()
+		
 		read += readAt64
 		if errRead == io.EOF {
 			break
