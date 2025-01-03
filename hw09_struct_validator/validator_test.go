@@ -42,7 +42,8 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			// Place your code here.
+			in: App{Version: "huawei.com"},
+			//User{"id", "name", 22, "email", UserRole("god"), []string("+79"), json.RawMessage{})}
 		},
 		// ...
 		// Place your code here.
@@ -50,6 +51,7 @@ func TestValidate(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
+			Validate(tt)
 			tt := tt
 			t.Parallel()
 
