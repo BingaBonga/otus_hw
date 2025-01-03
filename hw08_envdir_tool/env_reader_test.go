@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
+	//nolint:depguard
+	"github.com/stretchr/testify/assert"
 	//nolint:depguard
 	"github.com/stretchr/testify/require"
 )

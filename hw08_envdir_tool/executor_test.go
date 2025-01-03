@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	//nolint:depguard
+	"github.com/stretchr/testify/require"
 )
 
 func TestRunCmd(t *testing.T) {
