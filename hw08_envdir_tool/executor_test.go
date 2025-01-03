@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -11,9 +11,9 @@ func TestRunCmd(t *testing.T) {
 			"FOO": {"foo", false},
 			"BAR": {"bar", false},
 		}
-		cmd := []string{"/bash", "echo -e \"${FOO}${BAR}\""}
+		cmd := []string{"/bin/bash", "echo -e $FOO$BAR"}
 		code := RunCmd(cmd, env)
 
-		assert.Equal(t, 0, code)
+		require.Equal(t, 0, code)
 	})
 }
