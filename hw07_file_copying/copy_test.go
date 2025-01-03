@@ -119,6 +119,11 @@ func TestCopy(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("write and read from same file err", func(t *testing.T) {
+		err := Copy(fromFileName, fromFileName, 0, 0)
+		require.Equal(t, err, ErrUnsupportedFile)
+	})
+
 	t.Run("offset file err", func(t *testing.T) {
 		fromFileStat, err := os.Stat(fromFileName)
 		require.NoError(t, err)
