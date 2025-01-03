@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
@@ -16,11 +17,11 @@ func TestReadDir(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Equal(t, len(env), 5)
-		require.Equal(t, env["BAR"], EnvValue{"bar", false})
-		require.Equal(t, env["EMPTY"], EnvValue{"", false})
-		require.Equal(t, env["FOO"], EnvValue{"   foo\nwith new line", false})
-		require.Equal(t, env["HELLO"], EnvValue{"\"hello\"", false})
-		require.Equal(t, env["UNSET"], EnvValue{"", true})
+		assert.Equal(t, env["BAR"], EnvValue{"bar", false})
+		assert.Equal(t, env["EMPTY"], EnvValue{"", false})
+		assert.Equal(t, env["FOO"], EnvValue{"   foo\nwith new line", false})
+		assert.Equal(t, env["HELLO"], EnvValue{"\"hello\"", false})
+		assert.Equal(t, env["UNSET"], EnvValue{"", true})
 	})
 
 	t.Run("test data dir not exists", func(t *testing.T) {
