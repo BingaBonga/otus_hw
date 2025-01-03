@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	//nolint:depguard
 	"github.com/pkg/errors"
 )
 
@@ -26,10 +27,10 @@ var (
 	ErrValidationMin   = errors.New("value is less than min")
 	ErrValidationMax   = errors.New("value is larger than max")
 
-	ErrValidationIsNotStruct    = errors.New("value must be a struct")
-	ErrValidationTypeWrongTag   = errors.New("field type unsupported validation")
-	ErrValidationUnsupportedTag = errors.New("unsupported validation tag")
-	ErrValidationValueTag       = errors.New("value tag has unexpected format")
+	ErrValidationIsNotStruct        = errors.New("value must be a struct")
+	ErrValidationForFieldType       = errors.New("unsupported validation for field type")
+	ErrValidationUnsupportedTag     = errors.New("unsupported validation tag")
+	ErrValidationUnexpectedValueTag = errors.New("value tag has unexpected format")
 )
 
 type ValidationError struct {
@@ -48,7 +49,7 @@ func (v ValidationError) Error() string {
 }
 
 func (v ValidationErrors) Error() string {
-	if v == nil || len(v) == 0 {
+	if len(v) == 0 {
 		return ""
 	}
 
@@ -143,28 +144,31 @@ func validateKindField[T ValidatableField](fieldName string, value T, validateTa
 	valueKind := reflect.ValueOf(value).Kind()
 
 	for _, validateTag := range validateTags {
-		if (strings.HasPrefix(validateTag, validatePrefixLen) || strings.HasPrefix(validateTag, validatePrefixRegex)) && valueKind != reflect.String {
-			return ValidationError{fieldName, ErrValidationTypeWrongTag}
+		if (strings.HasPrefix(validateTag, validatePrefixLen) ||
+			strings.HasPrefix(validateTag, validatePrefixRegex)) && valueKind != reflect.String {
+			return ValidationError{fieldName, ErrValidationForFieldType}
 		}
 
-		if (strings.HasPrefix(validateTag, validatePrefixMin) || strings.HasPrefix(validateTag, validatePrefixMax)) && valueKind != reflect.Int {
-			return ValidationError{fieldName, ErrValidationTypeWrongTag}
+		if (strings.HasPrefix(validateTag, validatePrefixMin) ||
+			strings.HasPrefix(validateTag, validatePrefixMax)) && valueKind != reflect.Int {
+			return ValidationError{fieldName, ErrValidationForFieldType}
 		}
 
 		var err error
-		if strings.HasPrefix(validateTag, validatePrefixIn) {
+		switch {
+		case strings.HasPrefix(validateTag, validatePrefixIn):
 			err = validateKindFieldIn(fieldName, value, validateTag)
-		} else if strings.HasPrefix(validateTag, validatePrefixLen) {
+		case strings.HasPrefix(validateTag, validatePrefixLen):
 			err = validateKindFieldLen(fieldName, fmt.Sprint(value), validateTag)
-		} else if strings.HasPrefix(validateTag, validatePrefixRegex) {
+		case strings.HasPrefix(validateTag, validatePrefixRegex):
 			err = validateKindFieldRegex(fieldName, fmt.Sprint(value), validateTag)
-		} else if strings.HasPrefix(validateTag, validatePrefixMin) {
+		case strings.HasPrefix(validateTag, validatePrefixMin):
 			intValue, _ := strconv.Atoi(fmt.Sprint(value))
 			err = validateKindFieldMin(fieldName, intValue, validateTag)
-		} else if strings.HasPrefix(validateTag, validatePrefixMax) {
+		case strings.HasPrefix(validateTag, validatePrefixMax):
 			intValue, _ := strconv.Atoi(fmt.Sprint(value))
 			err = validateKindFieldMax(fieldName, intValue, validateTag)
-		} else {
+		default:
 			err = ValidationError{fieldName, ErrValidationUnsupportedTag}
 		}
 
@@ -177,7 +181,7 @@ func validateKindField[T ValidatableField](fieldName string, value T, validateTa
 }
 
 func validateKindFieldIn[T ValidatableField](fieldName string, value T, validateTag string) error {
-	allowedValues := strings.Split(strings.TrimLeft(validateTag, validatePrefixIn), ",")
+	allowedValues := strings.Split(strings.TrimPrefix(validateTag, validatePrefixIn), ",")
 	if !slices.Contains(allowedValues, fmt.Sprint(value)) {
 		return ValidationError{fieldName, ErrValidationIn}
 	}
@@ -186,9 +190,9 @@ func validateKindFieldIn[T ValidatableField](fieldName string, value T, validate
 }
 
 func validateKindFieldLen(fieldName string, value string, validateTag string) error {
-	validationLen, err := strconv.Atoi(strings.TrimLeft(validateTag, validatePrefixLen))
+	validationLen, err := strconv.Atoi(strings.TrimPrefix(validateTag, validatePrefixLen))
 	if err != nil {
-		return ValidationError{fieldName, ErrValidationValueTag}
+		return ValidationError{fieldName, ErrValidationUnexpectedValueTag}
 	}
 
 	if len(value) != validationLen {
@@ -199,9 +203,9 @@ func validateKindFieldLen(fieldName string, value string, validateTag string) er
 }
 
 func validateKindFieldRegex(fieldName string, value string, validateTag string) error {
-	matched, err := regexp.Match(strings.TrimLeft(validateTag, validatePrefixRegex), []byte(value))
+	matched, err := regexp.Match(strings.TrimPrefix(validateTag, validatePrefixRegex), []byte(value))
 	if err != nil {
-		return ValidationError{fieldName, ErrValidationValueTag}
+		return ValidationError{fieldName, ErrValidationUnexpectedValueTag}
 	}
 
 	if !matched {
@@ -212,9 +216,9 @@ func validateKindFieldRegex(fieldName string, value string, validateTag string) 
 }
 
 func validateKindFieldMin(fieldName string, value int, validateTag string) error {
-	validationMin, err := strconv.Atoi(strings.TrimLeft(validateTag, validatePrefixMin))
+	validationMin, err := strconv.Atoi(strings.TrimPrefix(validateTag, validatePrefixMin))
 	if err != nil {
-		return ValidationError{fieldName, ErrValidationValueTag}
+		return ValidationError{fieldName, ErrValidationUnexpectedValueTag}
 	}
 
 	if value < validationMin {
@@ -225,9 +229,9 @@ func validateKindFieldMin(fieldName string, value int, validateTag string) error
 }
 
 func validateKindFieldMax(fieldName string, value int, validateTag string) error {
-	validationMax, err := strconv.Atoi(strings.TrimLeft(validateTag, validatePrefixMax))
+	validationMax, err := strconv.Atoi(strings.TrimPrefix(validateTag, validatePrefixMax))
 	if err != nil {
-		return ValidationError{fieldName, ErrValidationValueTag}
+		return ValidationError{fieldName, ErrValidationUnexpectedValueTag}
 	}
 
 	if value > validationMax {

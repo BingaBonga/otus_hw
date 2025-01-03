@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	//nolint:depguard
+	"github.com/google/uuid"
+	//nolint:depguard
+	"github.com/stretchr/testify/assert"
 )
 
 type UserRole string
@@ -16,11 +19,11 @@ type (
 	User struct {
 		ID     string `json:"id" validate:"len:36"`
 		Name   string
-		Age    int             `validate:"min:18|max:50"`
-		Email  string          `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
-		Role   UserRole        `validate:"in:admin,stuff"`
-		Phones []string        `validate:"len:11"`
-		meta   json.RawMessage //nolint:unused
+		Age    int      `validate:"min:18|max:50"`
+		Email  string   `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
+		Role   UserRole `validate:"in:admin,stuff"`
+		Phones []string `validate:"len:11"`
+		meta   json.RawMessage
 	}
 
 	App struct {
@@ -37,8 +40,20 @@ type (
 		Code int    `validate:"in:200,404,500"`
 		Body string `json:"omitempty"`
 	}
+
+	ValidateTagErrors struct {
+		UnsupportedTag           string `validate:"unsupported:200"`
+		UnsupportedTagForString1 string `validate:"min:200"`
+		UnsupportedTagForString2 string `validate:"max:200"`
+		UnsupportedTagForInt1    int    `validate:"len:200"`
+		UnsupportedTagForInt2    int    `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
+		TagWithUnexpectedFormat1 string `validate:"len:dwdswdsw"`
+		TagWithUnexpectedFormat2 int    `validate:"min:dwdswdsw"`
+		TagWithUnexpectedFormat3 int    `validate:"max:dwdswdsw"`
+	}
 )
 
+//nolint:lll
 func TestValidate(t *testing.T) {
 	tests := []struct {
 		in          interface{}
@@ -101,6 +116,19 @@ func TestValidate(t *testing.T) {
 		{
 			in:          Response{Code: 403, Body: "Something"},
 			expectedErr: ValidationError{"Code", ErrValidationIn},
+		},
+		{
+			in: ValidateTagErrors{"", "", "", 0, 0, "", 0, 0},
+			expectedErr: ValidationErrors{
+				ValidationError{"UnsupportedTag", ErrValidationUnsupportedTag},
+				ValidationError{"UnsupportedTagForString1", ErrValidationForFieldType},
+				ValidationError{"UnsupportedTagForString2", ErrValidationForFieldType},
+				ValidationError{"UnsupportedTagForInt1", ErrValidationForFieldType},
+				ValidationError{"UnsupportedTagForInt2", ErrValidationForFieldType},
+				ValidationError{"TagWithUnexpectedFormat1", ErrValidationUnexpectedValueTag},
+				ValidationError{"TagWithUnexpectedFormat2", ErrValidationUnexpectedValueTag},
+				ValidationError{"TagWithUnexpectedFormat3", ErrValidationUnexpectedValueTag},
+			},
 		},
 	}
 
