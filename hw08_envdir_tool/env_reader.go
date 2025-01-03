@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -26,8 +26,8 @@ func ReadDir(dir string) (Environment, error) {
 
 	env := make(Environment, len(dirEntry))
 	for _, entry := range dirEntry {
-		if !entry.IsDir() {
-			file, err := os.Open(fmt.Sprintf("%s/%s", dir, entry.Name()))
+		if !entry.IsDir() && !strings.Contains(entry.Name(), "=") {
+			file, err := os.Open(path.Join(dir, entry.Name()))
 			if err != nil {
 				return nil, err
 			}
