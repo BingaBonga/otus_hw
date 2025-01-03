@@ -2,7 +2,10 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -42,21 +45,79 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			in: App{Version: "huawei.com"},
-			//User{"id", "name", 22, "email", UserRole("god"), []string("+79"), json.RawMessage{})}
+			in:          App{Version: "12345"},
+			expectedErr: nil,
 		},
-		// ...
-		// Place your code here.
+		{
+			in:          App{Version: "huawei.com"},
+			expectedErr: ValidationError{"Version", ErrValidationLen},
+		},
+		{
+			in:          "StringValue",
+			expectedErr: ErrValidationIsNotStruct,
+		},
+		{
+			in:          User{uuid.New().String(), "Something", 22, "email@test.com", UserRole("admin"), []string{"89991111111"}, json.RawMessage{}},
+			expectedErr: nil,
+		},
+		{
+			in:          User{uuid.New().String(), "Something", 11, "email@test.com", UserRole("admin"), []string{"89991111111"}, json.RawMessage{}},
+			expectedErr: ValidationError{"Age", ErrValidationMin},
+		},
+		{
+			in:          User{uuid.New().String(), "Something", 111, "email@test.com", UserRole("admin"), []string{"89991111111"}, json.RawMessage{}},
+			expectedErr: ValidationError{"Age", ErrValidationMax},
+		},
+		{
+			in:          User{uuid.New().String(), "Something", 22, "email", UserRole("admin"), []string{"89991111111"}, json.RawMessage{}},
+			expectedErr: ValidationError{"Email", ErrValidationRegex},
+		},
+		{
+			in:          User{uuid.New().String(), "Something", 22, "email@test.com", UserRole("nachalnika"), []string{"89991111111"}, json.RawMessage{}},
+			expectedErr: ValidationError{"Role", ErrValidationIn},
+		},
+		{
+			in:          User{uuid.New().String(), "Something", 22, "email@test.com", UserRole("stuff"), []string{"89991111111", "12345"}, json.RawMessage{}},
+			expectedErr: ValidationError{"Phones", ErrValidationLen},
+		},
+		{
+			in: User{"", "", 1, "", UserRole(""), []string{"", "89991111111"}, json.RawMessage{}},
+			expectedErr: ValidationErrors{
+				ValidationError{"ID", ErrValidationLen},
+				ValidationError{"Age", ErrValidationMin},
+				ValidationError{"Email", ErrValidationRegex},
+				ValidationError{"Role", ErrValidationIn},
+				ValidationError{"Phones", ErrValidationLen},
+			},
+		},
+		{
+			in:          Token{Header: []byte("Something"), Payload: []byte("Something")},
+			expectedErr: nil,
+		},
+		{
+			in:          Response{Code: 200, Body: "Something"},
+			expectedErr: nil,
+		},
+		{
+			in:          Response{Code: 403, Body: "Something"},
+			expectedErr: ValidationError{"Code", ErrValidationIn},
+		},
 	}
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
-			Validate(tt)
 			tt := tt
 			t.Parallel()
 
-			// Place your code here.
-			_ = tt
+			err := Validate(tt.in)
+
+			var validationErrors ValidationErrors
+			ok := errors.As(err, &validationErrors)
+			if ok {
+				assert.Equal(t, tt.expectedErr.Error(), err.Error())
+			} else {
+				assert.Equal(t, tt.expectedErr, err)
+			}
 		})
 	}
 }

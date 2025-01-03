@@ -26,10 +26,10 @@ var (
 	ErrValidationMin   = errors.New("value is less than min")
 	ErrValidationMax   = errors.New("value is larger than max")
 
+	ErrValidationIsNotStruct    = errors.New("value must be a struct")
 	ErrValidationTypeWrongTag   = errors.New("field type unsupported validation")
 	ErrValidationUnsupportedTag = errors.New("unsupported validation tag")
 	ErrValidationValueTag       = errors.New("value tag has unexpected format")
-	ErrValidationValueIsNil     = errors.New("value is nil")
 )
 
 type ValidationError struct {
@@ -52,6 +52,10 @@ func (v ValidationErrors) Error() string {
 		return ""
 	}
 
+	if len(v) == 1 {
+		return v[0].Error()
+	}
+
 	sb := strings.Builder{}
 	for _, err := range v {
 		sb.WriteString(fmt.Sprintf("%s\n", err.Error()))
@@ -61,9 +65,9 @@ func (v ValidationErrors) Error() string {
 }
 
 func Validate(v interface{}) error {
-	reflectV := reflect.ValueOf(&v)
+	reflectV := reflect.ValueOf(v)
 	if reflectV.Kind() != reflect.Struct {
-		return errors.New("value must be a struct or a pointer to struct")
+		return ErrValidationIsNotStruct
 	}
 
 	return validateStruct(reflectV)
@@ -71,12 +75,11 @@ func Validate(v interface{}) error {
 
 func validateStruct(reflectV reflect.Value) error {
 	validationErrors := make(ValidationErrors, 0)
-	for i := 0; i < reflectV.NumField(); i++ {
-		reflectT := reflectV.Type()
-		err := validateField(reflectT.Field(i), reflectV.Field(i))
+	for i := 0; i < reflectV.Type().NumField(); i++ {
+		err := validateField(reflectV.Type().Field(i), reflectV.Field(i))
 		if err != nil {
 			var validationError ValidationError
-			ok := errors.Is(err, &validationError)
+			ok := errors.As(err, &validationError)
 
 			if ok {
 				validationErrors = append(validationErrors, validationError)
@@ -86,29 +89,30 @@ func validateStruct(reflectV reflect.Value) error {
 		}
 	}
 
-	return validationErrors
+	if len(validationErrors) > 0 {
+		return validationErrors
+	}
+
+	return nil
 }
 
 func validateField(reflectT reflect.StructField, reflectV reflect.Value) error {
-	validateTags := strings.Split(reflectT.Tag.Get("validate"), "|")
-	if len(validateTags) == 0 {
+	validateTag := reflectT.Tag.Get("validate")
+	if validateTag == "" {
 		return nil
 	}
 
-	return validateKind(reflectT.Name, reflectV, validateTags)
+	return validateKind(reflectT.Name, reflectV, strings.Split(validateTag, "|"))
 }
 
 func validateKind(filedName string, reflectV reflect.Value, validateTags []string) error {
 	switch {
 	case reflectV.Kind() == reflect.Slice:
 		return validateKindSlice(filedName, reflectV.Interface(), validateTags)
-	case reflectV.Kind() == reflect.String:
 	case reflectV.Kind() == reflect.Int:
-		switch value := reflectV.Interface().(type) {
-		case int:
-		case string:
-			return validateKindField(filedName, value, validateTags)
-		}
+		return validateKindField(filedName, int(reflectV.Int()), validateTags)
+	case reflectV.Kind() == reflect.String:
+		return validateKindField(filedName, reflectV.String(), validateTags)
 	}
 
 	return nil
@@ -117,6 +121,12 @@ func validateKind(filedName string, reflectV reflect.Value, validateTags []strin
 func validateKindSlice(fieldName string, valueAny any, validateTags []string) error {
 	switch value := valueAny.(type) {
 	case []int:
+		for _, v := range value {
+			err := validateKindField(fieldName, v, validateTags)
+			if err != nil {
+				return err
+			}
+		}
 	case []string:
 		for _, v := range value {
 			err := validateKindField(fieldName, v, validateTags)
@@ -130,20 +140,15 @@ func validateKindSlice(fieldName string, valueAny any, validateTags []string) er
 }
 
 func validateKindField[T ValidatableField](fieldName string, value T, validateTags []string) error {
-	reflectV := reflect.ValueOf(&value)
-	valueKind := reflectV.Kind()
-
-	if reflectV.IsNil() {
-		return ValidationError{fieldName, ErrValidationValueIsNil}
-	}
+	valueKind := reflect.ValueOf(value).Kind()
 
 	for _, validateTag := range validateTags {
 		if (strings.HasPrefix(validateTag, validatePrefixLen) || strings.HasPrefix(validateTag, validatePrefixRegex)) && valueKind != reflect.String {
-			return ValidationError{fieldName, errors.Wrap(ErrValidationTypeWrongTag, fmt.Sprintf("for type %v validation tag %s is not allowed", valueKind, validateTag))}
+			return ValidationError{fieldName, ErrValidationTypeWrongTag}
 		}
 
 		if (strings.HasPrefix(validateTag, validatePrefixMin) || strings.HasPrefix(validateTag, validatePrefixMax)) && valueKind != reflect.Int {
-			return ValidationError{fieldName, errors.Wrap(ErrValidationTypeWrongTag, fmt.Sprintf("for type %v validation tag %s is not allowed", valueKind, validateTag))}
+			return ValidationError{fieldName, ErrValidationTypeWrongTag}
 		}
 
 		var err error
@@ -174,7 +179,7 @@ func validateKindField[T ValidatableField](fieldName string, value T, validateTa
 func validateKindFieldIn[T ValidatableField](fieldName string, value T, validateTag string) error {
 	allowedValues := strings.Split(strings.TrimLeft(validateTag, validatePrefixIn), ",")
 	if !slices.Contains(allowedValues, fmt.Sprint(value)) {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationIn, fmt.Sprintf("allowed values: %v, current value is %s", allowedValues, fmt.Sprint(value)))}
+		return ValidationError{fieldName, ErrValidationIn}
 	}
 
 	return nil
@@ -183,11 +188,11 @@ func validateKindFieldIn[T ValidatableField](fieldName string, value T, validate
 func validateKindFieldLen(fieldName string, value string, validateTag string) error {
 	validationLen, err := strconv.Atoi(strings.TrimLeft(validateTag, validatePrefixLen))
 	if err != nil {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationValueTag, fmt.Sprintf("validation value must be a number, current value %s", strings.TrimLeft(validateTag, validatePrefixLen)))}
+		return ValidationError{fieldName, ErrValidationValueTag}
 	}
 
 	if len(value) != validationLen {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationLen, fmt.Sprintf("value length must be %v, current lenght %v", validationLen, len(value)))}
+		return ValidationError{fieldName, ErrValidationLen}
 	}
 
 	return nil
@@ -196,11 +201,11 @@ func validateKindFieldLen(fieldName string, value string, validateTag string) er
 func validateKindFieldRegex(fieldName string, value string, validateTag string) error {
 	matched, err := regexp.Match(strings.TrimLeft(validateTag, validatePrefixRegex), []byte(value))
 	if err != nil {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationValueTag, fmt.Sprintf("validation value must be a regex, current value %s", strings.TrimLeft(validateTag, validatePrefixRegex)))}
+		return ValidationError{fieldName, ErrValidationValueTag}
 	}
 
 	if !matched {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationRegex, fmt.Sprintf("value must be macthed %s, current value %s", strings.TrimLeft(validateTag, validatePrefixRegex), value))}
+		return ValidationError{fieldName, ErrValidationRegex}
 	}
 
 	return nil
@@ -209,11 +214,11 @@ func validateKindFieldRegex(fieldName string, value string, validateTag string) 
 func validateKindFieldMin(fieldName string, value int, validateTag string) error {
 	validationMin, err := strconv.Atoi(strings.TrimLeft(validateTag, validatePrefixMin))
 	if err != nil {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationValueTag, fmt.Sprintf("validation value must be a number, current value %s", strings.TrimLeft(validateTag, validatePrefixMin)))}
+		return ValidationError{fieldName, ErrValidationValueTag}
 	}
 
 	if value < validationMin {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationMin, fmt.Sprintf("value must be less %v, current value %v", validationMin, value))}
+		return ValidationError{fieldName, ErrValidationMin}
 	}
 
 	return nil
@@ -222,11 +227,11 @@ func validateKindFieldMin(fieldName string, value int, validateTag string) error
 func validateKindFieldMax(fieldName string, value int, validateTag string) error {
 	validationMax, err := strconv.Atoi(strings.TrimLeft(validateTag, validatePrefixMax))
 	if err != nil {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationValueTag, fmt.Sprintf("validation value must be a number, current value %s", strings.TrimLeft(validateTag, validatePrefixMax)))}
+		return ValidationError{fieldName, ErrValidationValueTag}
 	}
 
 	if value > validationMax {
-		return ValidationError{fieldName, errors.Wrap(ErrValidationMax, fmt.Sprintf("value musn't larger %v, current value %v", validationMax, value))}
+		return ValidationError{fieldName, ErrValidationMax}
 	}
 
 	return nil
