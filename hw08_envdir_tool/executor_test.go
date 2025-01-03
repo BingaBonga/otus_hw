@@ -11,7 +11,7 @@ func TestRunCmd(t *testing.T) {
 			"FOO": {"foo", false},
 			"BAR": {"bar", false},
 		}
-		cmd := []string{"/bin/bash", "echo -e \"${FOO}${BAR}\""}
+		cmd := []string{"/bash", "echo -e \"${FOO}${BAR}\""}
 		code := RunCmd(cmd, env)
 
 		assert.Equal(t, 0, code)
