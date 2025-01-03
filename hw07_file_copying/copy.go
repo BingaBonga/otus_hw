@@ -5,19 +5,31 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 
 	//nolint:depguard
 	"github.com/cheggaaa/pb"
 )
 
 var (
+	ErrPathsNotDifferent     = errors.New("paths from and to file must be different")
 	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
 
-func Copy(fromPath, toPath string, offset, limit int64) (err error) {
-	if fromPath == toPath {
-		return ErrUnsupportedFile
+func Copy(fromPath, toPath string, offset, limit int64) error {
+	fromPathAbsolute, err := filepath.Abs(fromPath)
+	if err != nil {
+		return err
+	}
+
+	toPathAbsolute, err := filepath.Abs(toPath)
+	if err != nil {
+		return err
+	}
+
+	if fromPathAbsolute == toPathAbsolute {
+		return ErrPathsNotDifferent
 	}
 
 	fromFile, err := os.OpenFile(fromPath, os.O_RDONLY, 0o666)

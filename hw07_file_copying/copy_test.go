@@ -121,7 +121,7 @@ func TestCopy(t *testing.T) {
 
 	t.Run("write and read from same file err", func(t *testing.T) {
 		err := Copy(fromFileName, fromFileName, 0, 0)
-		require.Equal(t, err, ErrUnsupportedFile)
+		require.Equal(t, err, ErrPathsNotDifferent)
 	})
 
 	t.Run("offset file err", func(t *testing.T) {
