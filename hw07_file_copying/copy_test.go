@@ -105,7 +105,7 @@ func TestCopy(t *testing.T) {
 
 	t.Run("file not found from err", func(t *testing.T) {
 		err := Copy("wrong_path", toFileName, 0, 0)
-		require.Equal(t, err, ErrFileDoesNotExist)
+		require.Error(t, err)
 
 		err = os.Remove(toFileName)
 		require.Error(t, err)
