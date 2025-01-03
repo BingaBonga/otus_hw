@@ -38,7 +38,7 @@ func ReadDir(dir string) (Environment, error) {
 				return nil, err
 			}
 
-			fileContent := strings.TrimRight(string(bytes.Replace(fileContentByte, []byte("\x00"), []byte("\n"), -1)), " \t\r\n")
+			fileContent := strings.TrimRight(string(bytes.Replace(fileContentByte, []byte("\x00"), []byte("\n"), -1)), "\t \n")
 			env[entry.Name()] = EnvValue{fileContent, len(fileContent) == 0}
 		}
 	}
