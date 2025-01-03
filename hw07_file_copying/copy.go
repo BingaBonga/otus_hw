@@ -40,7 +40,7 @@ func Copy(fromPath, toPath string, offset, limit int64) (err error) {
 		return err
 	}
 
-	if fromFileInfo.IsDir() {
+	if fromFileInfo.IsDir() || !fromFileInfo.Mode().IsRegular() {
 		return ErrUnsupportedFile
 	}
 
