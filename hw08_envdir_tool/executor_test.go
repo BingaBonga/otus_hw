@@ -14,7 +14,7 @@ func TestRunCmd(t *testing.T) {
 			"FOO": {"foo", false},
 			"BAR": {"bar", false},
 		}
-		cmd := []string{"/bin/bash", "-c", "echo $FOO$BAR"}
+		cmd := []string{"/bin/bash", "echo $FOO$BAR"}
 		code := RunCmd(cmd, env)
 
 		require.Equal(t, 0, code)
@@ -26,7 +26,7 @@ func TestRunCmd(t *testing.T) {
 			"FOO": {"foo", true},
 			"BAR": {"bar", false},
 		}
-		cmd := []string{"/bin/bash", "-c", "echo $FOO$BAR"}
+		cmd := []string{"/bin/bash", "echo $FOO$BAR"}
 		code := RunCmd(cmd, env)
 
 		require.Equal(t, 127, code)
