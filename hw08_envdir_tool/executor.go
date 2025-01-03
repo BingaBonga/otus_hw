@@ -11,13 +11,15 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	for envName, envValue := range env {
 		err := os.Unsetenv(envName)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return 1
 		}
 
 		if !envValue.NeedRemove {
 			err := os.Setenv(envName, envValue.Value)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
+				return 1
 			}
 		}
 	}
@@ -27,7 +29,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	command.Stdout = os.Stdout
 
 	if err := command.Run(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return command.ProcessState.ExitCode()
