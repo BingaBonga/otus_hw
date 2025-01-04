@@ -98,7 +98,7 @@ func TestTelnetClient(t *testing.T) {
 			err = os.Stderr.Chown(os.Getuid(), os.Getgid())
 			require.NoError(t, err)
 
-			_, err = os.Stderr.Read(stdErr)
+			_, err = io.ReadAll(os.Stderr)
 			require.NoError(t, err)
 			require.Equal(t, "world\n", string(stdErr))
 		}()
