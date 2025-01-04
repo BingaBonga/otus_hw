@@ -11,9 +11,7 @@ import (
 	"time"
 )
 
-var (
-	timeout time.Duration
-)
+var timeout time.Duration
 
 func init() {
 	flag.DurationVar(&timeout, "timeout", 10*time.Second, "connection timeout")
