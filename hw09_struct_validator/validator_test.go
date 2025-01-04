@@ -41,15 +41,9 @@ type (
 		Body string `json:"omitempty"`
 	}
 
-	ValidateTagErrors struct {
-		UnsupportedTag           string `validate:"unsupported:200"`
-		UnsupportedTagForString1 string `validate:"min:200"`
-		UnsupportedTagForString2 string `validate:"max:200"`
-		UnsupportedTagForInt1    int    `validate:"len:200"`
-		UnsupportedTagForInt2    int    `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
-		TagWithUnexpectedFormat1 string `validate:"len:dwdswdsw"`
-		TagWithUnexpectedFormat2 int    `validate:"min:dwdswdsw"`
-		TagWithUnexpectedFormat3 int    `validate:"max:dwdswdsw"`
+	ValidateUnsupportedTag struct {
+		UnsupportedTag1 string `validate:"unsupported:200"`
+		UnsupportedTag2 string `validate:"unsupported:200"`
 	}
 )
 
@@ -118,17 +112,8 @@ func TestValidate(t *testing.T) {
 			expectedErr: ValidationError{"Code", ErrValidationIn},
 		},
 		{
-			in: ValidateTagErrors{"", "", "", 0, 0, "", 0, 0},
-			expectedErr: ValidationErrors{
-				ValidationError{"UnsupportedTag", ErrValidationUnsupportedTag},
-				ValidationError{"UnsupportedTagForString1", ErrValidationForFieldType},
-				ValidationError{"UnsupportedTagForString2", ErrValidationForFieldType},
-				ValidationError{"UnsupportedTagForInt1", ErrValidationForFieldType},
-				ValidationError{"UnsupportedTagForInt2", ErrValidationForFieldType},
-				ValidationError{"TagWithUnexpectedFormat1", ErrValidationUnexpectedValueTag},
-				ValidationError{"TagWithUnexpectedFormat2", ErrValidationUnexpectedValueTag},
-				ValidationError{"TagWithUnexpectedFormat3", ErrValidationUnexpectedValueTag},
-			},
+			in:          ValidateUnsupportedTag{"", ""},
+			expectedErr: ErrValidationUnsupportedTag,
 		},
 	}
 
