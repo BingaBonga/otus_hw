@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"time"
 )
 
@@ -30,6 +31,7 @@ func (t *telnetClientImpl) Receive() error {
 	if _, err := io.Copy(t.out, t.Conn); err != nil {
 		return fmt.Errorf("write message error: %w", err)
 	}
+	fmt.Fprintf(os.Stderr, "...connection was closed by peer\n")
 	return nil
 }
 
@@ -37,6 +39,7 @@ func (t *telnetClientImpl) Send() error {
 	if _, err := io.Copy(t.Conn, t.in); err != nil {
 		return fmt.Errorf("send message error: %w", err)
 	}
+	fmt.Fprintf(os.Stderr, "...EOF\n")
 	return nil
 }
 
@@ -47,6 +50,7 @@ func (t *telnetClientImpl) Connect() error {
 	}
 
 	t.Conn = conn
+	fmt.Fprintf(os.Stderr, "...connected to %s\n", t.address)
 	return nil
 }
 
