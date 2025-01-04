@@ -84,7 +84,7 @@ func TestTelnetClient(t *testing.T) {
 		go func() {
 			defer wg.Done()
 
-			stdErr := &bytes.Buffer{}
+			stdErr := make([]byte, 1024)
 			in := &bytes.Buffer{}
 			out := &bytes.Buffer{}
 
@@ -98,9 +98,9 @@ func TestTelnetClient(t *testing.T) {
 			err = os.Stderr.Chown(os.Getuid(), os.Getgid())
 			require.NoError(t, err)
 
-			_, err = os.Stderr.WriteTo(stdErr)
+			_, err = os.Stderr.Read(stdErr)
 			require.NoError(t, err)
-			require.Equal(t, "world\n", stdErr.String())
+			require.Equal(t, "world\n", string(stdErr))
 		}()
 
 		go func() {
