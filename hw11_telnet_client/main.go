@@ -23,7 +23,7 @@ func main() {
 		log.Fatalf("Usage: go-telnet %s %s", "host", "port")
 	}
 
-	ctx, closeCtx := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, closeCtx := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	address := net.JoinHostPort(flag.Arg(0), flag.Arg(1))
 	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
 	if err := client.Connect(); err != nil {
