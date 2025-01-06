@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -23,7 +24,8 @@ func main() {
 		log.Fatalf("Usage: go-telnet %s %s", "host", "port")
 	}
 
-	ctx, closeCtx := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	once := sync.Once{}
+	ctx, closeCtx := signal.NotifyContext(context.Background(), syscall.SIGINT)
 	address := net.JoinHostPort(flag.Arg(0), flag.Arg(1))
 	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
 	if err := client.Connect(); err != nil {
@@ -32,7 +34,7 @@ func main() {
 	defer client.Close()
 
 	go func() {
-		defer closeCtx()
+		defer once.Do(closeCtx)
 		err := client.Receive()
 		if err != nil {
 			log.Printf("cannot start client receive: %v\n", err)
@@ -40,6 +42,7 @@ func main() {
 	}()
 
 	go func() {
+		defer once.Do(closeCtx)
 		err := client.Send()
 		if err != nil {
 			log.Printf("cannot start client send: %v\n", err)
