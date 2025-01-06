@@ -29,6 +29,7 @@ var (
 
 	ErrValidationIsNotStruct    = errors.New("value must be a struct")
 	ErrValidationUnsupportedTag = errors.New("unsupported validation tag")
+	ErrValidationForFieldType   = errors.New("unsupported validation for field type")
 )
 
 type ValidationError struct {
@@ -139,7 +140,19 @@ func validateKindSlice(fieldName string, valueAny any, validateTags []string) er
 }
 
 func validateKindField[T ValidatableField](fieldName string, value T, validateTags []string) error {
+	valueKind := reflect.ValueOf(value).Kind()
+
 	for _, validateTag := range validateTags {
+		if (strings.HasPrefix(validateTag, validatePrefixLen) ||
+			strings.HasPrefix(validateTag, validatePrefixRegex)) && valueKind != reflect.String {
+			return ValidationError{fieldName, ErrValidationForFieldType}
+		}
+
+		if (strings.HasPrefix(validateTag, validatePrefixMin) ||
+			strings.HasPrefix(validateTag, validatePrefixMax)) && valueKind != reflect.Int {
+			return ValidationError{fieldName, ErrValidationForFieldType}
+		}
+
 		var err error
 		switch {
 		case strings.HasPrefix(validateTag, validatePrefixIn):

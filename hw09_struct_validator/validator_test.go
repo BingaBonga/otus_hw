@@ -45,6 +45,13 @@ type (
 		UnsupportedTag1 string `validate:"unsupported:200"`
 		UnsupportedTag2 string `validate:"unsupported:200"`
 	}
+
+	ValidateUnsupportedTagByType struct {
+		UnsupportedTagForString1 string `validate:"min:200"`
+		UnsupportedTagForString2 string `validate:"max:200"`
+		UnsupportedTagForInt1    int    `validate:"len:200"`
+		UnsupportedTagForInt2    int    `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
+	}
 )
 
 //nolint:lll
@@ -114,6 +121,15 @@ func TestValidate(t *testing.T) {
 		{
 			in:          ValidateUnsupportedTag{"", ""},
 			expectedErr: ErrValidationUnsupportedTag,
+		},
+		{
+			in: ValidateUnsupportedTagByType{"", "", 0, 0},
+			expectedErr: ValidationErrors{
+				ValidationError{"UnsupportedTagForString1", ErrValidationForFieldType},
+				ValidationError{"UnsupportedTagForString2", ErrValidationForFieldType},
+				ValidationError{"UnsupportedTagForInt1", ErrValidationForFieldType},
+				ValidationError{"UnsupportedTagForInt2", ErrValidationForFieldType},
+			},
 		},
 	}
 
