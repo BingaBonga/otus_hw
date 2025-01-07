@@ -2,7 +2,6 @@ package hw10programoptimization
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -39,7 +38,7 @@ func countDomains(r io.Reader, domain string) (DomainStat, error) {
 
 		if strings.HasSuffix(user.Email, "."+domain) {
 			if !strings.Contains(user.Email, "@") {
-				return nil, errors.New(fmt.Sprintf("invalid email: %s does not contain @", user.Email))
+				return nil, fmt.Errorf("invalid email: %s does not contain @", user.Email)
 			}
 
 			foundDomain := strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])
