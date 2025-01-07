@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"io"
 	"net"
+	"os"
 	"sync"
 	"testing"
 	"time"
 
+	//nolint:depguard
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,5 +63,34 @@ func TestTelnetClient(t *testing.T) {
 		}()
 
 		wg.Wait()
+	})
+
+	t.Run("invalid address error", func(t *testing.T) {
+		timeout, err := time.ParseDuration("10s")
+		require.NoError(t, err)
+
+		client := NewTelnetClient("invalid:address", timeout, io.NopCloser(&bytes.Buffer{}), &bytes.Buffer{})
+		require.Error(t, client.Connect())
+	})
+
+	t.Run("close in", func(t *testing.T) {
+		l, err := net.Listen("tcp", "127.0.0.1:")
+		require.NoError(t, err)
+		defer func() { require.NoError(t, l.Close()) }()
+
+		in, out, err := os.Pipe()
+		require.NoError(t, err)
+
+		timeout, err := time.ParseDuration("10s")
+		require.NoError(t, err)
+
+		client := NewTelnetClient(l.Addr().String(), timeout, in, out)
+		require.NoError(t, client.Connect())
+
+		err = in.Close()
+		require.NoError(t, err)
+
+		err = client.Send()
+		require.Error(t, err)
 	})
 }
