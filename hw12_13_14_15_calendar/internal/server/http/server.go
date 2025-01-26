@@ -5,14 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/api"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/app"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage"
-	jsoniter "github.com/json-iterator/go"
 	"net/http"
 	"time"
 
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/api"
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/configs"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/app"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage"
+	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
 
@@ -58,7 +58,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
-func (s *Server) CreateEvent(resp http.ResponseWriter, req *http.Request) {
+func (s *Server) CreateEvent(resp http.ResponseWriter, req *http.Request) { //nolint:dupl
 	var event storage.Event
 	err := jsoniter.NewDecoder(req.Body).Decode(&event)
 	if err != nil {
@@ -89,7 +89,7 @@ func (s *Server) CreateEvent(resp http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (s *Server) UpdateEvent(resp http.ResponseWriter, req *http.Request) {
+func (s *Server) UpdateEvent(resp http.ResponseWriter, req *http.Request) { //nolint:dupl
 	var event storage.Event
 	err := jsoniter.NewDecoder(req.Body).Decode(&event)
 	if err != nil {
@@ -157,7 +157,7 @@ func (s *Server) DeleteEvent(resp http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (s *Server) GetDayEvents(resp http.ResponseWriter, req *http.Request, owner string) { //nolint:dupl
+func (s *Server) GetDayEvents(resp http.ResponseWriter, _ *http.Request, owner string) { //nolint:dupl
 	if owner == "" {
 		s.logger.Error("get events day owner is required")
 		http.Error(resp, "owner is required", http.StatusBadRequest)
@@ -186,7 +186,7 @@ func (s *Server) GetDayEvents(resp http.ResponseWriter, req *http.Request, owner
 	}
 }
 
-func (s *Server) GetWeekEvents(resp http.ResponseWriter, req *http.Request, owner string) { //nolint:dupl
+func (s *Server) GetWeekEvents(resp http.ResponseWriter, _ *http.Request, owner string) { //nolint:dupl
 	if owner == "" {
 		s.logger.Error("get events week owner is required")
 		http.Error(resp, "owner is required", http.StatusBadRequest)
@@ -215,7 +215,7 @@ func (s *Server) GetWeekEvents(resp http.ResponseWriter, req *http.Request, owne
 	}
 }
 
-func (s *Server) GetMonthEvents(resp http.ResponseWriter, req *http.Request, owner string) { //nolint: dupl
+func (s *Server) GetMonthEvents(resp http.ResponseWriter, _ *http.Request, owner string) { //nolint: dupl
 	if owner == "" {
 		s.logger.Error("get events month owner is required")
 		http.Error(resp, "owner is required", http.StatusBadRequest)
