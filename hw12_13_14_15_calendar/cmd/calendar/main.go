@@ -84,7 +84,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		if err := server.Start(ctx, config.HTTP); err != nil {
+		if err := server.Start(config.HTTP); err != nil {
 			logg.Error("failed to start http server: " + err.Error())
 		}
 	}()
