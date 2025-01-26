@@ -1,4 +1,4 @@
-BIN := "./calendar"
+BIN := "./bin/calendar"
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
