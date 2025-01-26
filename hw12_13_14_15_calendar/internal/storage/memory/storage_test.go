@@ -70,18 +70,19 @@ func TestStorage(t *testing.T) {
 		err := memory.CreateEvent(ctx, testEvent)
 		require.NoError(t, err)
 
+		updatedTime := time.Now()
 		err = memory.UpdateEvent(ctx, &storage.Event{
 			ID:          testEvent.ID,
 			Title:       "test_title2",
 			Owner:       "test_user2",
-			StartDate:   time.Now(),
+			StartDate:   updatedTime,
 			Duration:    32,
 			Description: "test_description2",
 			RemindAt:    120,
 		})
 		require.NoError(t, err)
 
-		events, err := memory.GetEventsByPeriod(ctx, "test_user2", testEvent.StartDate, testEvent.StartDate.Add(1))
+		events, err := memory.GetEventsByPeriod(ctx, "test_user2", updatedTime, updatedTime.Add(1))
 		require.NoError(t, err)
 		require.Equal(t, len(events), 1)
 		require.Equal(t, events[0].ID, "test_id")
