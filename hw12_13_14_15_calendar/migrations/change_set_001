@@ -1,0 +1,9 @@
+CREATE TABLE event (
+    id UUID not null,
+    title varchar(256) not null,
+    start_date timestamp not null default now(),
+    duration long not null,
+    description varchar(4096),
+    owner varchar(256) not null,
+    remind_at long,
+);
