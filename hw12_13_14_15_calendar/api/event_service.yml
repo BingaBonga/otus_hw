@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+    title: Go Calendar
+    description: Go Calendar Open Api
+    version: 1.0.0
+tags:
+    - name: event
+      description: Calendar event
+paths:
+    /event:
+        post:
+            tags:
+                - event
+            summary: Create calendar event
+            description: Create calendar event
+            operationId: createEvent
+            requestBody:
+                description: Create calendar event
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Event'
+                required: true
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Event'
+                '400':
+                    description: Invalid input
+                '404':
+                    description: Event not found
+                '422':
+                    description: Validation exception
+        put:
+            tags:
+                - event
+            summary: Update an existing calendar event
+            description: Update an existing calendar event
+            operationId: UpdateEvent
+            requestBody:
+                description: Update an existing calendar event
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Event'
+                required: true
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Event'
+                '400':
+                    description: Invalid input
+                '404':
+                    description: Event not found
+                '422':
+                    description: Validation exception
+        delete:
+            tags:
+                - event
+            summary: Delete an existing calendar event
+            description: Delete an existing calendar event
+            operationId: DeleteEvent
+            responses:
+                '404':
+                    description: Event not found
+    /event/{owner}/getDay:
+        get:
+            tags:
+                - event
+            summary: Get day events an existing calendar event
+            description: Get day events an existing calendar event
+            operationId: GetDayEvents
+            parameters:
+                - name: owner
+                  in: path
+                  description: Owner of event to return
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Event'
+                '400':
+                    description: Invalid input
+                '422':
+                    description: Validation exception
+    /event/{owner}/getWeek:
+        get:
+            tags:
+                - event
+            summary: Get week events an existing calendar event
+            description: Get week events an existing calendar event
+            operationId: GetWeekEvents
+            parameters:
+                - name: owner
+                  in: path
+                  description: Owner of event to return
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Event'
+                '400':
+                    description: Invalid input
+                '422':
+                    description: Validation exception
+    /event/{owner}/getMonth:
+        get:
+            tags:
+                - event
+            summary: Get month events an existing calendar event
+            description: Get month events an existing calendar event
+            operationId: GetMonthEvents
+            parameters:
+                - name: owner
+                  in: path
+                  description: Owner of event to return
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Event'
+                '400':
+                    description: Invalid input
+                '422':
+                    description: Validation exception
+components:
+    schemas:
+        Event:
+            type: object
+            required:
+                - title
+                - startDate
+                - owner
+                - duration
+            properties:
+                id:
+                    type: string
+                    format: UUID
+                title:
+                    type: string
+                startDate:
+                    type: string
+                    format: date-time
+                duration:
+                    type: integer
+                    format: int64
+                description:
+                    type: string
+                owner:
+                    type: string
+                remindAt:
+                    type: integer
+                    format: int64
