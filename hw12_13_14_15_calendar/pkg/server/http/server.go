@@ -10,8 +10,8 @@ import (
 
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/api"
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/configs"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/app"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/app"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/storage"
 	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
