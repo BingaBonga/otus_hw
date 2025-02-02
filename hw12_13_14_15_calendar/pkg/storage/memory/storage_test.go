@@ -6,7 +6,7 @@ import (
 	"time"
 
 	//nolint:depguard
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/storage"
 	//nolint:depguard
 	"github.com/stretchr/testify/require"
 )

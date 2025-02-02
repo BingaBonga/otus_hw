@@ -11,11 +11,11 @@ import (
 	"time"
 
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/configs"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/app"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/kafka"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/logger"
-	memorystorage "github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage/memory"
-	sqlstorage "github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage/sql"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/app"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/kafka"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/logger"
+	memorystorage "github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/storage/memory"
+	sqlstorage "github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/storage/sql"
 	"github.com/go-co-op/gocron/v2"
 	"go.uber.org/zap"
 )

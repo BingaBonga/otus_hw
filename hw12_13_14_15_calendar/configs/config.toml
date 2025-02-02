@@ -4,7 +4,7 @@ path = "./calendar.log"
 
 [db]
 inMemory = false
-host = "localhost"
+host = "postgres"
 port = 5432
 username = "postgres"
 password = "123456"
@@ -12,4 +12,4 @@ dbname = "calendar"
 
 [http]
 host = "localhost"
-port = 8080
+port = 8081

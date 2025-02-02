@@ -14,10 +14,10 @@ import (
 
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/api"
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/configs"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/app"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/logger"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage"
-	memorystorage "github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/app"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/logger"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/storage"
+	memorystorage "github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/storage/memory"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zapcore"
 )

@@ -1,0 +1,89 @@
+version: '3.9'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  calendar:
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+      - calendar_scheduler
+      - calendar_storer
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    expose:
+      - 8081
+    networks:
+      - app-tier
+
+  calendar_scheduler:
+    build:
+      context: .
+      dockerfile: calendar_scheduler/Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    restart: on-failure
+    ports:
+      - "8082:8082"
+    expose:
+      - 8082
+    networks:
+      - app-tier
+
+  calendar_storer:
+    build:
+      context: .
+      dockerfile: calendar_storer/Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    restart: on-failure
+    ports:
+      - "8083:8083"
+    expose:
+      - 8083
+    networks:
+      - app-tier
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+
+  postgres:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: calendar
+    volumes:
+      - ./migrations/change_set_001.sql:/docker-entrypoint-initdb.d/change_set_001.sql
+    ports:
+      - "5432:5432"
+    restart: always
+    networks:
+      - app-tier
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    hostname: kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT

@@ -4,14 +4,14 @@ path    = "./sender.log"
 
 [db]
 inMemory    = false
-host        = "localhost"
+host        = "postgres"
 port        = 5432
 username    = "postgres"
 password    = "123456"
 dbname      = "calendar"
 
 [kafka]
-Url          = "localhost:29092"
+Url          = "kafka:29092"
 Group        = "calendar"
 ConsumeTopic = "calendar-event-consumer"
 ServiceName  = "calendar"

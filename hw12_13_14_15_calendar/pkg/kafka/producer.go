@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/configs"
-	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage"
+	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/pkg/storage"
 	"github.com/IBM/sarama"
 	"go.uber.org/zap"
 )
