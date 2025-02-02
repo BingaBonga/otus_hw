@@ -134,14 +134,15 @@ func sendEvents(ctx context.Context, storage app.Storage, logger *zap.Logger, pr
 
 	for _, event := range events {
 		if !event.IsSend && event.StartDate.Add(time.Minute*time.Duration(event.RemindAt)).Before(timeNow) {
-			err := producer.SendEventMessage(&event)
+			eventLoop := event
+			err := producer.SendEventMessage(&eventLoop)
 			if err != nil {
 				logger.Error("send event job: failed to send event", zap.Error(err))
 				continue
 			}
 
 			event.IsSend = true
-			err = storage.UpdateEvent(ctx, &event)
+			err = storage.UpdateEvent(ctx, &eventLoop)
 			if err != nil {
 				logger.Error("send event job: failed to update event", zap.Error(err))
 				continue
