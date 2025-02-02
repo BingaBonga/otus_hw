@@ -18,4 +18,5 @@ type Event struct {
 	Description string        `json:"description" db:"description"`
 	Owner       string        `json:"owner" db:"owner"`
 	RemindAt    int64         `json:"remindAt" db:"remind_at"`
+	IsSend      bool          `json:"isSend" db:"is_send"`
 }

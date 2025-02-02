@@ -53,8 +53,8 @@ func (s *Storage) CreateEvent(ctx context.Context, event *storage.Event) error {
 
 	_, err = s.db.ExecContext(
 		ctx,
-		`INSERT INTO event (id, title, start_date, duration, description,  owner,  remind_at)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		`INSERT INTO event (id, title, start_date, duration, description,  owner,  remind_at, is_send)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		event.ID,
 		event.Title,
 		event.StartDate,
@@ -62,6 +62,7 @@ func (s *Storage) CreateEvent(ctx context.Context, event *storage.Event) error {
 		event.Description,
 		event.Owner,
 		event.RemindAt,
+		event.IsSend,
 	)
 	if err != nil {
 		return err
@@ -88,14 +89,16 @@ func (s *Storage) UpdateEvent(ctx context.Context, event *storage.Event) error {
     		    duration=$3, 
     		    description=$4, 
     		    owner=$5, 
-    		    remind_at=$6
-			WHERE id=$7`,
+    		    remind_at=$6,
+    		    is_send=$7
+			WHERE id=$8`,
 		event.Title,
 		event.StartDate,
 		event.Duration,
 		event.Description,
 		event.Owner,
 		event.RemindAt,
+		event.IsSend,
 		event.ID,
 	)
 	if err != nil {
@@ -133,7 +136,8 @@ func (s *Storage) GetEventsByPeriod(ctx context.Context, owner string, startTime
     		    duration, 
     		    description, 
     		    owner, 
-    		    remind_at
+    		    remind_at,
+    		    is_send
 			FROM event
 			WHERE owner = $1 AND start_date >=$2 AND start_date < $3`,
 		owner, startTime, endTime,
@@ -153,6 +157,44 @@ func (s *Storage) GetEventsByPeriod(ctx context.Context, owner string, startTime
 			&ev.Description,
 			&ev.Owner,
 			&ev.RemindAt,
+			&ev.IsSend,
+		); err != nil {
+			return nil, err
+		}
+		events = append(events, ev)
+	}
+
+	return events, nil
+}
+
+func (s *Storage) GetEvents(ctx context.Context) ([]storage.Event, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`SELECT id, 
+       			title, 
+       			start_date, 
+    		    duration, 
+    		    description, 
+    		    owner, 
+    		    remind_at,
+    		    is_send
+			FROM event`)
+	if err != nil {
+		return nil, err
+	}
+
+	events := make([]storage.Event, 0)
+	for rows.Next() {
+		var ev storage.Event
+		if err = rows.Scan(
+			&ev.ID,
+			&ev.Title,
+			&ev.StartDate,
+			&ev.Duration,
+			&ev.Description,
+			&ev.Owner,
+			&ev.RemindAt,
+			&ev.IsSend,
 		); err != nil {
 			return nil, err
 		}

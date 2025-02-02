@@ -9,9 +9,11 @@ import (
 )
 
 type Config struct {
-	Logger LoggerConf
-	DB     DBConfig
-	HTTP   HTTPConfig
+	Logger   LoggerConf
+	DB       DBConfig
+	HTTP     HTTPConfig
+	Kafka    KafkaConfig
+	Schedule ScheduleConfig
 }
 
 type LoggerConf struct {
@@ -31,6 +33,18 @@ type DBConfig struct {
 type HTTPConfig struct {
 	Host string
 	Port int
+}
+
+type KafkaConfig struct {
+	URL          string
+	Group        string
+	ConsumeTopic string
+	ProduceTopic string
+	ServiceName  string
+}
+
+type ScheduleConfig struct {
+	Cron string
 }
 
 func ReadConfig(path string) (c Config, err error) {
