@@ -1,0 +1,20 @@
+[logger]
+level   = "INFO"
+path    = "./scheduler.log"
+
+[db]
+inMemory    = false
+host        = "localhost"
+port        = 5432
+username    = "postgres"
+password    = "123456"
+dbname      = "calendar"
+
+[kafka]
+Url          = "localhost:29092"
+Group        = "calendar"
+ProduceTopic = "calendar-event-producer"
+ServiceName  = "calendar"
+
+[schedule]
+Cron = "*/1 * * * *"

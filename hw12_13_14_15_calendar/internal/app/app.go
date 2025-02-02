@@ -20,6 +20,7 @@ type Storage interface {
 	UpdateEvent(ctx context.Context, event *storage.Event) error
 	DeleteEvent(ctx context.Context, id string) error
 	GetEventsByPeriod(ctx context.Context, owner string, startTime time.Time, endTime time.Time) ([]storage.Event, error)
+	GetEvents(ctx context.Context) ([]storage.Event, error)
 }
 
 func New(storage Storage) *App {
@@ -41,6 +42,7 @@ func (a *App) CreateEvent(ctx context.Context, event *storage.Event) error {
 		event.ID = id.String()
 	}
 
+	event.IsSend = false
 	event.StartDate = event.StartDate.UTC()
 	err = a.storage.CreateEvent(ctx, event)
 	if err != nil {
@@ -60,6 +62,7 @@ func (a *App) UpdateEvent(ctx context.Context, event *storage.Event) error {
 		return err
 	}
 
+	event.IsSend = false
 	event.StartDate = event.StartDate.UTC()
 	err = a.storage.UpdateEvent(ctx, event)
 	if err != nil {

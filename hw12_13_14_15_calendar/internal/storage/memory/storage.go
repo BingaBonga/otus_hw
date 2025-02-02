@@ -70,3 +70,15 @@ func (s *Storage) GetEventsByPeriod(_ context.Context,
 
 	return events, nil
 }
+
+func (s *Storage) GetEvents(ctx context.Context) ([]storage.Event, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	events := make([]storage.Event, len(s.event))
+	for _, e := range s.event {
+		events = append(events, *e)
+	}
+
+	return events, nil
+}
