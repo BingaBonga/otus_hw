@@ -1,7 +1,9 @@
 package kafka
 
+//nolint:depguard
 import (
 	"encoding/json"
+
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/configs"
 	"github.com/BingaBonga/otus_hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/IBM/sarama"
@@ -15,7 +17,7 @@ type Producer struct {
 }
 
 func NewProducer(config configs.KafkaConfig, logger *zap.Logger) (*Producer, error) {
-	producer, err := sarama.NewSyncProducer([]string{config.Url}, getProducerConfig(config))
+	producer, err := sarama.NewSyncProducer([]string{config.URL}, getProducerConfig(config))
 	if err != nil {
 		return nil, err
 	}

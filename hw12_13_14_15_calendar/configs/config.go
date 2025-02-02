@@ -36,7 +36,7 @@ type HTTPConfig struct {
 }
 
 type KafkaConfig struct {
-	Url          string
+	URL          string
 	Group        string
 	ConsumeTopic string
 	ProduceTopic string

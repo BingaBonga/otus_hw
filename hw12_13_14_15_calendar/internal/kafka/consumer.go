@@ -1,5 +1,6 @@
 package kafka
 
+//nolint:depguard
 import (
 	"context"
 
@@ -33,7 +34,7 @@ func (consumer Consumer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sa
 }
 
 func (consumer Consumer) getConsumerGroup() (sarama.ConsumerGroup, error) {
-	return sarama.NewConsumerGroup([]string{consumer.Config.Url}, consumer.Config.Group, consumer.getConsumerConfig())
+	return sarama.NewConsumerGroup([]string{consumer.Config.URL}, consumer.Config.Group, consumer.getConsumerConfig())
 }
 
 func (consumer Consumer) RegisterMessageConsumer() error {
@@ -42,7 +43,7 @@ func (consumer Consumer) RegisterMessageConsumer() error {
 		return err
 	}
 
-	consumer.Logger.Info("message consumer start messaging in address: " + consumer.Config.Url)
+	consumer.Logger.Info("message consumer start messaging in address: " + consumer.Config.URL)
 	for {
 		err := consumerGroup.Consume(consumer.Context, []string{consumer.Config.ConsumeTopic}, consumer)
 		if err != nil {

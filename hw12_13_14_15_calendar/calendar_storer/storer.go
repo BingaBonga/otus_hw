@@ -68,7 +68,14 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		consumer := kafka.Consumer{Config: config.Kafka, Logger: *logg, Context: ctx, Storage: storage, ConsumeMessage: consumeMessage}
+		consumer := kafka.Consumer{
+			Config:         config.Kafka,
+			Logger:         *logg,
+			Context:        ctx,
+			Storage:        storage,
+			ConsumeMessage: consumeMessage,
+		}
+
 		err := consumer.RegisterMessageConsumer()
 		if err != nil {
 			logg.Error("register message consumer failed", zap.Error(err))

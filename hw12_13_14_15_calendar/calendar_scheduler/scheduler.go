@@ -1,5 +1,6 @@
 package main
 
+//nolint:depguard
 import (
 	"context"
 	"flag"
@@ -76,6 +77,7 @@ func main() {
 	wg.Wait()
 }
 
+//nolint:lll
 func startJob(ctx context.Context, storage app.Storage, logger *zap.Logger, producer *kafka.Producer, config configs.ScheduleConfig) error {
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
@@ -103,7 +105,6 @@ func clearEvents(ctx context.Context, storage app.Storage, logger *zap.Logger) {
 
 	yearAgo := time.Now().AddDate(-1, 0, 0)
 	events, err := storage.GetEvents(ctx)
-
 	if err != nil {
 		return
 	}
